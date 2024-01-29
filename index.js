@@ -64,7 +64,7 @@ const spin = () => {
     }
   }
 
-  const reels = [[]];
+  const reels = [];
   for (let i = 0; i < COLS; i++) {
     reels.push([]);
     const reelSymbols = [...symbols];
@@ -78,8 +78,33 @@ const spin = () => {
   return reels;
 };
 
-const reelAvailable = spin();
-console.log(reelAvailable);
+const transpose = (reel) => {
+  const rows = [];
+  for (let i = 0; i < ROWS; i++) {
+    rows.push([]);
+    for (let j = 0; j < COLS; j++) {
+      rows[i].push(reel[j][i]);
+    }
+  }
+  return rows;
+};
+
+const printRows = (any) => {
+  for (const roll of any) {
+    let rowString = "";
+    for (const [i, symb] of roll.entries()) {
+      rowString += symb;
+      if (i != roll.length - 1) {
+        rowString += " | ";
+      }
+    }
+    console.log(rowString);
+  }
+};
+
 let balanceAvailable = deposit();
 const numberOfLine = getnumberOfLine();
 const betAvailable = getbet(balanceAvailable, numberOfLine);
+const reelAvailable = spin();
+const transposeAvailable = transpose(reelAvailable);
+printRows(transposeAvailable);
