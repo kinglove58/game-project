@@ -1,3 +1,5 @@
+//
+
 const prompt = require("prompt-sync")();
 
 const ROWS = 3;
@@ -18,7 +20,8 @@ const SYMBOLS_VALUES = {
 };
 
 const deposit = () => {
-  while (true) {
+  const maxAttempts = 3;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const depositAmount = prompt("Enter a deposit amount: ");
     const numberDepositAmount = parseFloat(depositAmount);
 
@@ -28,10 +31,13 @@ const deposit = () => {
       return numberDepositAmount;
     }
   }
+  console.log("you have exceeded your attempt");
+  return null;
 };
 
 const getnumberOfLine = () => {
-  while (true) {
+  const numberAttempt = 3;
+  for (let i = 0; i < numberAttempt; i++) {
     const lines = prompt("Enter the number of line between 1-3: ");
     const numberOfLine = parseFloat(lines);
 
@@ -41,14 +47,16 @@ const getnumberOfLine = () => {
       return numberOfLine;
     }
   }
+  console.log("You have exceeded your attempt!");
+  return null;
 };
 
-const getbet = (balance, line) => {
+const getbet = (balance, numberOfLine) => {
   while (true) {
-    const bet = prompt("Enter the bet per line: ");
+    const bet = prompt("Enter the bet amount per line: ");
     const numberBet = parseFloat(bet);
 
-    if (isNaN(numberBet) || numberBet <= 0 || numberBet > balance / line) {
+    if (isNaN(numberBet) || numberBet <= 0 || numberBet > balance / numberOfLine) {
       console.log("Invalid bet, try again");
     } else {
       return numberBet;
@@ -102,9 +110,59 @@ const printRows = (any) => {
   }
 };
 
-let balanceAvailable = deposit();
-const numberOfLine = getnumberOfLine();
-const betAvailable = getbet(balanceAvailable, numberOfLine);
-const reelAvailable = spin();
-const transposeAvailable = transpose(reelAvailable);
-printRows(transposeAvailable);
+const getWinning = (rows, bet, lines) => {
+  let winning = 0;
+  for (let i = 0; i < lines; i++) {
+    const symbols = rows[i];
+    let allSame = true;
+    for (const symbol of symbols) {
+      if (symbol != symbols[0]) {
+        allSame = false;
+        break;
+      }
+    }
+    if (allSame) {
+      winning += bet * SYMBOLS_VALUES[symbols[0]];
+    }
+  }
+  return winning;
+};
+
+const game = () => {
+  let balanceAvailable = deposit();
+  if (balanceAvailable === null) {
+    console.log("Game over, try again!");
+    return;
+  }
+  while (true) {
+    console.log("Your balance is $" + balanceAvailable);
+    const numberOfLine = getnumberOfLine();
+    if (numberOfLine === null) {
+      console.log("game over");
+      return;
+    }
+    const betAvailable = getbet(balanceAvailable, numberOfLine);
+    balanceAvailable -= betAvailable * numberOfLine;
+    const reelAvailable = spin();
+    const transposeAvailable = transpose(reelAvailable);
+    printRows(transposeAvailable);
+    const winningAvailable = getWinning(
+      transposeAvailable,
+      betAvailable,
+      numberOfLine
+    );
+
+    console.log("You win $" + winningAvailable.toString());
+
+    balanceAvailable += winningAvailable;
+
+    if (balanceAvailable <= 0) {
+      console.log("You run out of monwy");
+      break;
+    }
+    const playAgain = prompt("Do you want to playagain (yes or no)?");
+    if (playAgain != "yes") break;
+  }
+};
+
+game();
